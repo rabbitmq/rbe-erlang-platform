@@ -1,0 +1,45 @@
+name: Update Container Image
+on:
+  workflow_dispatch:
+jobs:
+  update-container-image:
+    name: Update Container Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      IMAGE: pivotalrabbitmq/rabbitmq-server-buildenv
+      TAG: linux-erlang-24.1-clang
+    steps:
+    - name: CHECKOUT bazel-toolchains
+      uses: actions/checkout@v2.4.0
+      with:
+        repository: bazel-toolchains
+    - name: BUILD rbe_configs_gen
+      run: |
+        go build -o rbe_configs_gen \
+          ./cmd/rbe_configs_gen/rbe_configs_gen.go
+    - name: RUN rbe_configs_gen
+      run: |
+        ./rbe_configs_gen \
+          --toolchain_container=${IMAGE}:${TAG} \
+          --output_tarball=rbe_default.tar \
+          --exec_os=linux \
+          --target_os=linux
+    - name: CHECKOUT REPOSITORY
+      uses: actions/checkout@v2.4.0
+      with:
+        path: rbe-erlang-platform
+    - name: EXTRACT ARCHIVE
+      working-directory: rbe-erlang-platform
+      run: |
+        tar -xvf ../rbe_default.tar 
+    - name: CREATE PULL REQUEST
+      uses: peter-evans/create-pull-request@v3
+      working-directory: rbe-erlang-platform
+      with:
+        committer: GitHub <noreply@github.com>
+        author: GitHub <noreply@github.com>
+        title: Update toolchain based on latest docker image
+        commit-message: |
+          Use latest ${IMAGE}:${TAG}
+        delete-branch: true
