@@ -13,7 +13,10 @@ jobs:
     - name: CHECKOUT bazel-toolchains
       uses: actions/checkout@v2.4.0
       with:
-        repository: bazel-toolchains
+        repository: bazelbuild/bazel-toolchains
+    - uses: actions/setup-go@v2
+      with:
+        go-version: '^1.17.1'
     - name: BUILD rbe_configs_gen
       run: |
         go build -o rbe_configs_gen \
