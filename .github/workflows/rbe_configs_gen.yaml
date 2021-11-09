@@ -35,8 +35,8 @@ jobs:
         tar -xvf ../rbe_default.tar 
     - name: CREATE PULL REQUEST
       uses: peter-evans/create-pull-request@v3
-      working-directory: rbe-erlang-platform
       with:
+        path: rbe-erlang-platform
         committer: GitHub <noreply@github.com>
         author: GitHub <noreply@github.com>
         title: Update toolchain based on latest docker image
