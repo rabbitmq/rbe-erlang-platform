@@ -43,7 +43,7 @@ jobs:
         path: rbe-erlang-platform
         committer: GitHub <noreply@github.com>
         author: GitHub <noreply@github.com>
-        title: Update toolchain based on latest docker image
+        title: Use latest ${{ steps.select-image.outputs.IMAGE }}
         commit-message: |
           Use latest ${{ steps.select-image.outputs.IMAGE }}
         delete-branch: true
