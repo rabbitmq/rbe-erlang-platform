@@ -53,6 +53,7 @@ jobs:
         committer: GitHub <noreply@github.com>
         author: GitHub <noreply@github.com>
         title: Use latest ${{ steps.select-image.outputs.IMAGE }}
+        branch: create-pull-request/${{ matrix.branch }}
         commit-message: |
           Use latest ${{ steps.select-image.outputs.IMAGE }}
         delete-branch: true
