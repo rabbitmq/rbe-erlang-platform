@@ -386,7 +386,7 @@ def _impl(ctx):
                 ],
                 flag_groups = [
                     flag_group(
-                        flags = ["-gsplit-dwarf"],
+                        flags = ["-gsplit-dwarf", "-g"],
                         expand_if_available = "per_object_debug_info_file",
                     ),
                 ],
@@ -663,6 +663,32 @@ def _impl(ctx):
                     flag_group(
                         flags = ["-isystem", "%{system_include_paths}"],
                         iterate_over = "system_include_paths",
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    external_include_paths_feature = feature(
+        name = "external_include_paths",
+        flag_sets = [
+            flag_set(
+                actions = [
+                    ACTION_NAMES.preprocess_assemble,
+                    ACTION_NAMES.linkstamp_compile,
+                    ACTION_NAMES.c_compile,
+                    ACTION_NAMES.cpp_compile,
+                    ACTION_NAMES.cpp_header_parsing,
+                    ACTION_NAMES.cpp_module_compile,
+                    ACTION_NAMES.clif_match,
+                    ACTION_NAMES.objc_compile,
+                    ACTION_NAMES.objcpp_compile,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-isystem", "%{external_include_paths}"],
+                        iterate_over = "external_include_paths",
+                        expand_if_available = "external_include_paths",
                     ),
                 ],
             ),
@@ -1167,6 +1193,7 @@ def _impl(ctx):
             preprocessor_defines_feature,
             includes_feature,
             include_paths_feature,
+            external_include_paths_feature,
             fdo_instrument_feature,
             cs_fdo_instrument_feature,
             cs_fdo_optimize_feature,
