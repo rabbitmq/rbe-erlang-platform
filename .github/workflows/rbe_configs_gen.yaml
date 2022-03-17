@@ -12,7 +12,7 @@ jobs:
       matrix:
         branch:
         - linux-erlang-23.3
-        - linux-erlang-24.1
+        - linux-erlang-24.3
     timeout-minutes: 15
     steps:
     - name: SELECT IMAGE
