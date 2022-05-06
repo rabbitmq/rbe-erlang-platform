@@ -11,6 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         branch:
+        - linux-rbe
         - linux-erlang-23.3
         - linux-erlang-24.3
     timeout-minutes: 15
