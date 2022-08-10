@@ -21,13 +21,13 @@ package(default_visibility = ["//visibility:public"])
 toolchain(
     name = "cc-toolchain",
     exec_compatible_with = [
-        "@bazel_tools//platforms:linux",
-        "@bazel_tools//platforms:x86_64",
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
         "@bazel_tools//tools/cpp:clang",
     ],
     target_compatible_with = [
-        "@bazel_tools//platforms:linux",
-        "@bazel_tools//platforms:x86_64",
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
     ],
     toolchain = "//cc:cc-compiler-k8",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
@@ -37,12 +37,12 @@ platform(
     name = "platform",
     parents = ["@local_config_platform//:host"],
     constraint_values = [
-        "@bazel_tools//platforms:linux",
-        "@bazel_tools//platforms:x86_64",
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
         "@bazel_tools//tools/cpp:clang",
     ],
     exec_properties = {
-        "container-image": "docker://pivotalrabbitmq/rabbitmq-server-buildenv@sha256:f7d80bca745fff4e1375fdae5a83812c903432a0d882f172ba4dcc05cdccc7a0",
+        "container-image": "docker://pivotalrabbitmq/rabbitmq-server-buildenv@sha256:427e799c92251f2a610edefabb1c105e12d236197c96a175970d992533ee3d50",
         "OSFamily": "Linux",
     },
 )
