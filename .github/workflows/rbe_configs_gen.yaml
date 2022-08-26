@@ -12,8 +12,7 @@ jobs:
       matrix:
         branch:
         - linux-rbe
-        - linux-erlang-23.3
-        - linux-erlang-24.3
+        - linux-rbe-experimental
     timeout-minutes: 15
     steps:
     - name: SELECT IMAGE
