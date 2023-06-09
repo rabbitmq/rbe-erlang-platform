@@ -18,7 +18,7 @@ jobs:
     - name: SELECT IMAGE
       id: select-image
       run: |
-        echo "::set-output name=IMAGE::pivotalrabbitmq/rabbitmq-server-buildenv:${{ matrix.branch }}"
+        echo "IMAGE=pivotalrabbitmq/rabbitmq-server-buildenv:${{ matrix.branch }}" | tee -a $GITHUB_OUTPUT
     - name: CHECKOUT bazel-toolchains
       uses: actions/checkout@v2.4.0
       with:
@@ -33,6 +33,7 @@ jobs:
     - name: RUN rbe_configs_gen
       run: |
         ./rbe_configs_gen \
+          --bazel_version=6.2.1 \
           --toolchain_container=${{ steps.select-image.outputs.IMAGE }} \
           --output_tarball=rbe_default.tar \
           --exec_os=linux \
