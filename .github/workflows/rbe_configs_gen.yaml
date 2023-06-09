@@ -33,7 +33,6 @@ jobs:
     - name: RUN rbe_configs_gen
       run: |
         ./rbe_configs_gen \
-          --bazel_version=6.2.1 \
           --toolchain_container=${{ steps.select-image.outputs.IMAGE }} \
           --output_tarball=rbe_default.tar \
           --exec_os=linux \
