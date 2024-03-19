@@ -27,13 +27,25 @@ jobs:
     - name: SELECT IMAGE
       id: select-image
       run: |
+        cat << EOF > Dockerfile
+          FROM pivotalrabbitmq/buildfarm-shard-worker-rabbitmq-server-buildenv:2.8.0
+          ENTRYPOINT []
+        EOF
         case ${{ env.BRANCH }} in
           linux-rbe )
             IMAGE=pivotalrabbitmq/rabbitmq-server-buildenv:linux-rbe ;;
           linux-rbe-experimental )
             IMAGE=pivotalrabbitmq/rabbitmq-server-buildenv:linux-rbe-experimental ;;
           buildfarm-shard-worker-rabbitmq-server-buildenv )
-            IMAGE=pivotalrabbitmq/buildfarm-shard-worker-rabbitmq-server-buildenv:2.8.0 ;;
+            # The buildfarm-shard-worker base image sets an entrypoint that breaks
+            # rbe_configs_gen
+            # Therefore, we create a local image that drops the entrypoint and use
+            # it, knowing that we drop the image from the exec_properties of the
+            # final config anyway
+            CHILD_IMAGE="buildfarm-shard-worker-rabbitmq-server-buildenv:2.8.0"
+            docker build . \
+              -t "$CHILD_IMAGE"
+            IMAGE="$CHILD_IMAGE" ;;
         esac
         echo "IMAGE=$IMAGE" | tee -a $GITHUB_OUTPUT
     - name: CHECKOUT bazel-toolchains
@@ -55,9 +67,9 @@ jobs:
           --exec_os=linux \
           --target_os=linux \
           --cleanup=false
-    - name: Setup tmate session
-      if: always()
-      uses: mxschmitt/action-tmate@v3
+    # - name: Setup tmate session
+    #   if: always()
+    #   uses: mxschmitt/action-tmate@v3
     - name: CHECKOUT REPOSITORY
       uses: actions/checkout@v2.4.0
       with:
@@ -66,7 +78,11 @@ jobs:
     - name: EXTRACT ARCHIVE
       working-directory: rbe-erlang-platform
       run: |
-        tar -xvf ../rbe_default.tar 
+        tar -xvf ../rbe_default.tar
+    - name: MAYBE PATCH
+      if: ${{ env.BRANCH }} == "buildfarm-shard-worker-rabbitmq-server-buildenv"
+      run: |
+        echo TODO
     - name: CREATE PULL REQUEST
       uses: peter-evans/create-pull-request@v3
       with:
