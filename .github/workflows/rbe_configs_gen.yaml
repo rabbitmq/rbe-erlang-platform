@@ -13,12 +13,16 @@ jobs:
         branch:
         - linux-rbe
         - linux-rbe-experimental
+        - buildfarm-shard-worker-rabbitmq-server-buildenv
+        include:
+        - branch: linux-rbe
+          image: pivotalrabbitmq/rabbitmq-server-buildenv:linux-rbe
+        - branch: linux-rbe-experimental
+          image: pivotalrabbitmq/rabbitmq-server-buildenv:linux-rbe-experimental
+        - branch: buildfarm-shard-worker-rabbitmq-server-buildenv
+          image: pivotalrabbitmq/buildfarm-shard-worker-rabbitmq-server-buildenv:2.8.0
     timeout-minutes: 15
     steps:
-    - name: SELECT IMAGE
-      id: select-image
-      run: |
-        echo "IMAGE=pivotalrabbitmq/rabbitmq-server-buildenv:${{ matrix.branch }}" | tee -a $GITHUB_OUTPUT
     - name: CHECKOUT bazel-toolchains
       uses: actions/checkout@v2.4.0
       with:
@@ -33,7 +37,7 @@ jobs:
     - name: RUN rbe_configs_gen
       run: |
         ./rbe_configs_gen \
-          --toolchain_container=${{ steps.select-image.outputs.IMAGE }} \
+          --toolchain_container=${{ matrix.image }} \
           --output_tarball=rbe_default.tar \
           --exec_os=linux \
           --target_os=linux
@@ -52,8 +56,8 @@ jobs:
         path: rbe-erlang-platform
         committer: GitHub <noreply@github.com>
         author: GitHub <noreply@github.com>
-        title: Use latest ${{ steps.select-image.outputs.IMAGE }}
+        title: Use latest ${{ matrix.image }}
         branch: create-pull-request/${{ matrix.branch }}
         commit-message: |
-          Use latest ${{ steps.select-image.outputs.IMAGE }}
+          Use latest ${{ matrix.image }}
         delete-branch: true
