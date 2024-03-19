@@ -37,15 +37,7 @@ jobs:
           linux-rbe-experimental )
             IMAGE=pivotalrabbitmq/rabbitmq-server-buildenv:linux-rbe-experimental ;;
           buildfarm-shard-worker-rabbitmq-server-buildenv )
-            # The buildfarm-shard-worker base image sets an entrypoint that breaks
-            # rbe_configs_gen
-            # Therefore, we create a local image that drops the entrypoint and use
-            # it, knowing that we drop the image from the exec_properties of the
-            # final config anyway
-            CHILD_IMAGE="buildfarm-shard-worker-rabbitmq-server-buildenv:2.8.0"
-            docker build . \
-              -t "$CHILD_IMAGE"
-            IMAGE="$CHILD_IMAGE" ;;
+            IMAGE=pivotalrabbitmq/buildfarm-shard-worker-rabbitmq-server-buildenv-noentry:2.8.0 ;;
         esac
         echo "IMAGE=$IMAGE" | tee -a $GITHUB_OUTPUT
     - name: CHECKOUT bazel-toolchains
