@@ -22,6 +22,24 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
+cc_library(name = "empty_lib")
+
+# Label flag for extra libraries to be linked into every binary.
+# TODO(bazel-team): Support passing flag multiple times to build a list.
+label_flag(
+    name = "link_extra_libs",
+    build_setting_default = ":empty_lib",
+)
+
+# The final extra library to be linked into every binary target. This collects
+# the above flag, but may also include more libraries depending on config.
+cc_library(
+    name = "link_extra_lib",
+    deps = [
+        ":link_extra_libs",
+    ],
+)
+
 cc_library(
     name = "malloc",
 )
@@ -80,20 +98,21 @@ cc_toolchain_config(
     target_libc = "glibc_2.19",
     abi_version = "clang",
     abi_libc_version = "glibc_2.19",
-    cxx_builtin_include_directories = ["/usr/local/include",
-    "/usr/lib/llvm-11/lib/clang/11.0.1/include",
+    cxx_builtin_include_directories = ["/usr/lib/llvm-15/lib/clang/15.0.7/include",
+    "/usr/local/include",
     "/usr/include/x86_64-linux-gnu",
     "/usr/include",
-    "/usr/lib/llvm-11/lib/clang/11.0.1/share",
-    "/usr/include/c++/10",
-    "/usr/include/x86_64-linux-gnu/c++/10",
-    "/usr/include/c++/10/backward"],
+    "/usr/lib/llvm-15/lib/clang/15.0.7/share",
+    "/usr/include/c++/12",
+    "/usr/include/x86_64-linux-gnu/c++/12",
+    "/usr/include/c++/12/backward",
+    "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"],
     tool_paths = {"ar": "/usr/bin/ar",
         "ld": "/usr/bin/ld",
         "llvm-cov": "None",
         "llvm-profdata": "None",
         "cpp": "/usr/bin/cpp",
-        "gcc": "/usr/lib/llvm-11/bin/clang",
+        "gcc": "/usr/lib/llvm-15/bin/clang",
         "dwp": "/usr/bin/dwp",
         "gcov": "/usr/bin/gcov",
         "nm": "/usr/bin/nm",
@@ -104,6 +123,8 @@ cc_toolchain_config(
     "-Wall",
     "-Wthread-safety",
     "-Wself-assign",
+    "-Wunused-but-set-parameter",
+    "-Wno-free-nonheap-object",
     "-fcolor-diagnostics",
     "-fno-omit-frame-pointer"],
     opt_compile_flags = ["-g0",
@@ -113,13 +134,18 @@ cc_toolchain_config(
     "-ffunction-sections",
     "-fdata-sections"],
     dbg_compile_flags = ["-g"],
+    conly_flags = [],
     cxx_flags = ["-std=c++14"],
     link_flags = ["-fuse-ld=/usr/bin/ld.gold",
+    "-B/usr/lib/llvm-15/bin",
     "-Wl,-no-as-needed",
-    "-Wl,-z,relro,-z,now",
-    "-B/usr/lib/llvm-11/bin"],
-    link_libs = ["-lstdc++",
-    "-lm"],
+    "-Wl,-z,relro,-z,now"],
+    link_libs = ["-Wl,--push-state,-as-needed",
+    "-lstdc++",
+    "-Wl,--pop-state",
+    "-Wl,--push-state,-as-needed",
+    "-lm",
+    "-Wl,--pop-state"],
     opt_link_flags = ["-Wl,--gc-sections"],
     unfiltered_compile_flags = ["-no-canonical-prefixes",
     "-Wno-builtin-macro-redefined",
