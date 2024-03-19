@@ -74,7 +74,10 @@ jobs:
     - name: MAYBE PATCH
       if: ${{ env.BRANCH }} == "buildfarm-shard-worker-rabbitmq-server-buildenv"
       run: |
-        echo TODO
+        sudo npm install --global --silent @bazel/buildozer
+
+        cd rbe-erlang-platform
+        buildozer 'remove exec_properties' //config:platform
     - name: CREATE PULL REQUEST
       uses: peter-evans/create-pull-request@v3
       with:
