@@ -1,0 +1,17 @@
+name: Update Container Image (Nightly Matrix)
+on:
+  schedule:
+  - cron: '0 3 * * *'
+jobs:
+  update-container-image-linux-rbe:
+    uses: ./.github/workflows/rbe_configs_gen.yaml
+    with:
+      branch: linux-rbe
+  update-container-image-linux-rbe-experimental:
+    uses: ./.github/workflows/rbe_configs_gen.yaml
+    with:
+      branch: linux-rbe-experimental
+  update-container-image-buildfarm-shard-worker-rabbitmq-server-buildenv:
+    uses: ./.github/workflows/rbe_configs_gen.yaml
+    with:
+      branch: buildfarm-shard-worker-rabbitmq-server-buildenv

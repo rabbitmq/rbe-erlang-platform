@@ -1,28 +1,45 @@
 name: Update Container Image
 on:
-  schedule:
-  - cron: '0 3 * * *'
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch on this repo to checkout
+        required: true
+        default: linux-rbe
+        type: choice
+        options:
+          - linux-rbe
+          - linux-rbe-experimental
+          - buildfarm-shard-worker-rabbitmq-server-buildenv
 jobs:
   update-container-image:
     name: Update Container Image
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        branch:
-        - linux-rbe
-        - linux-rbe-experimental
-        - buildfarm-shard-worker-rabbitmq-server-buildenv
-        include:
-        - branch: linux-rbe
-          image: pivotalrabbitmq/rabbitmq-server-buildenv:linux-rbe
-        - branch: linux-rbe-experimental
-          image: pivotalrabbitmq/rabbitmq-server-buildenv:linux-rbe-experimental
-        - branch: buildfarm-shard-worker-rabbitmq-server-buildenv
-          image: pivotalrabbitmq/buildfarm-shard-worker-rabbitmq-server-buildenv:2.8.0
     timeout-minutes: 15
+    env:
+      BRANCH: ${{ inputs.branch || github.event.inputs.branch }}
     steps:
+    - name: SELECT IMAGE
+      id: select-image
+      run: |
+        cat << EOF > Dockerfile
+          FROM pivotalrabbitmq/buildfarm-shard-worker-rabbitmq-server-buildenv:2.8.0
+          ENTRYPOINT []
+        EOF
+        case ${{ env.BRANCH }} in
+          linux-rbe )
+            IMAGE=pivotalrabbitmq/rabbitmq-server-buildenv:linux-rbe ;;
+          linux-rbe-experimental )
+            IMAGE=pivotalrabbitmq/rabbitmq-server-buildenv:linux-rbe-experimental ;;
+          buildfarm-shard-worker-rabbitmq-server-buildenv )
+            IMAGE=pivotalrabbitmq/buildfarm-shard-worker-rabbitmq-server-buildenv-noentry:2.8.0 ;;
+        esac
+        echo "IMAGE=$IMAGE" | tee -a $GITHUB_OUTPUT
     - name: CHECKOUT bazel-toolchains
       uses: actions/checkout@v2.4.0
       with:
@@ -37,27 +54,38 @@ jobs:
     - name: RUN rbe_configs_gen
       run: |
         ./rbe_configs_gen \
-          --toolchain_container=${{ matrix.image }} \
+          --toolchain_container=${{ steps.select-image.outputs.IMAGE }} \
           --output_tarball=rbe_default.tar \
           --exec_os=linux \
-          --target_os=linux
+          --target_os=linux \
+          --cleanup=false
+    # - name: Setup tmate session
+    #   if: always()
+    #   uses: mxschmitt/action-tmate@v3
     - name: CHECKOUT REPOSITORY
       uses: actions/checkout@v2.4.0
       with:
         path: rbe-erlang-platform
-        ref: ${{ matrix.branch }}
+        ref: ${{ env.BRANCH }}
     - name: EXTRACT ARCHIVE
       working-directory: rbe-erlang-platform
       run: |
-        tar -xvf ../rbe_default.tar 
+        tar -xvf ../rbe_default.tar
+    - name: MAYBE PATCH
+      if: ${{ env.BRANCH }} == "buildfarm-shard-worker-rabbitmq-server-buildenv"
+      run: |
+        sudo npm install --global --silent @bazel/buildozer
+
+        cd rbe-erlang-platform
+        buildozer 'remove exec_properties' //config:platform
     - name: CREATE PULL REQUEST
       uses: peter-evans/create-pull-request@v3
       with:
         path: rbe-erlang-platform
         committer: GitHub <noreply@github.com>
         author: GitHub <noreply@github.com>
-        title: Use latest ${{ matrix.image }}
-        branch: create-pull-request/${{ matrix.branch }}
+        title: Use latest ${{ steps.select-image.outputs.IMAGE }}
+        branch: create-pull-request/${{ env.BRANCH }}
         commit-message: |
-          Use latest ${{ matrix.image }}
+          Use latest ${{ steps.select-image.outputs.IMAGE }}
         delete-branch: true
