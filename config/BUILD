@@ -17,6 +17,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
+
 toolchain(
     name = "cc-toolchain",
     exec_compatible_with = [
@@ -34,10 +35,14 @@ toolchain(
 
 platform(
     name = "platform",
+    parents = ["@local_config_platform//:host"],
     constraint_values = [
         "@platforms//os:linux",
         "@platforms//cpu:x86_64",
         "@bazel_tools//tools/cpp:clang",
     ],
-    parents = ["@local_config_platform//:host"],
+    exec_properties = {
+        "container-image": "docker://pivotalrabbitmq/rabbitmq-server-buildenv@sha256:4665f534bb12be613f209a329b2efb6b6d335bf4dffe7e69025069096af061fa",
+        "OSFamily": "Linux",
+    },
 )
