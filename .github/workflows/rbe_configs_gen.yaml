@@ -72,12 +72,13 @@ jobs:
       run: |
         tar -xvf ../rbe_default.tar
     - name: MAYBE PATCH
-      if: ${{ env.BRANCH }} == "buildfarm-shard-worker-rabbitmq-server-buildenv"
       run: |
-        sudo npm install --global --silent @bazel/buildozer
+        if [[ "${{ env.BRANCH }}" == "buildfarm-shard-worker-rabbitmq-server-buildenv" ]]; then
+          sudo npm install --global --silent @bazel/buildozer
 
-        cd rbe-erlang-platform
-        buildozer 'remove exec_properties' //config:platform
+          cd rbe-erlang-platform
+          buildozer 'remove exec_properties' //config:platform
+        fi
     - name: CREATE PULL REQUEST
       uses: peter-evans/create-pull-request@v3
       with:
