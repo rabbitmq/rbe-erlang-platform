@@ -42,7 +42,7 @@ platform(
         "@bazel_tools//tools/cpp:clang",
     ],
     exec_properties = {
-        "container-image": "docker://pivotalrabbitmq/rabbitmq-server-buildenv@sha256:83cc5c66cebf16f9f80c14280ec376a99c85d645fdd3db121b13bfb68e96c515",
+        "container-image": "docker://pivotalrabbitmq/rabbitmq-server-buildenv@sha256:294df75145530b2b9e1e32fa360f7d27421170ed5a12218e2a86311a7635301f",
         "OSFamily": "Linux",
     },
 )
